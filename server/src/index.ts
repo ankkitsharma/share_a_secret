@@ -4,6 +4,8 @@ import { secretsTable } from "./db/schema";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { eq } from "drizzle-orm";
+import * as z from "zod";
+import { zValidator } from "@hono/zod-validator";
 
 type Env = {
   DATABASE_URL: string;
@@ -89,20 +91,27 @@ app.get("/apiv1/secrets", async (c) => {
   return c.json(secrets);
 });
 
-app.get("/apiv1/secrets/:id", async (c) => {
-  const id = parseInt(c.req.param("id"), 10);
-  if (isNaN(id)) {
-    return c.json({ error: "Invalid ID format" }, 400);
+app.get(
+  "/apiv1/secrets/:id",
+  zValidator(
+    "param",
+    z.object({
+      id: z.number(),
+    })
+  ),
+  async (c) => {
+    const id = c.req.valid("param").id;
+    // No need to check for NaN as validation ensures it's a valid number
+    const secret = await c.env.db
+      .select()
+      .from(secretsTable)
+      .where(eq(secretsTable.id, id))
+      .limit(1);
+    if (secret.length === 0) {
+      return c.json({ error: "Secret not found" }, 404);
+    }
+    return c.json(secret[0]);
   }
-  const secret = await c.env.db
-    .select()
-    .from(secretsTable)
-    .where(eq(secretsTable.id, id))
-    .limit(1);
-  if (secret.length === 0) {
-    return c.json({ error: "Secret not found" }, 404);
-  }
-  return c.json(secret[0]);
-});
+);
 
 export default app;
