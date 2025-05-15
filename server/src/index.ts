@@ -19,6 +19,20 @@ app.use("*", async (c, next) => {
   await next();
 });
 
+// Healthcheck route that doesn't require database access
+app.get("/health", (c) => {
+  return c.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    service: "share-a-secret-api",
+  });
+});
+// 1+ 1=
+app.get("/sum", (c) => {
+  const sum = 1 + 1;
+  return c.json({ sum });
+});
+
 app.get("/", async (c) => {
   //test connection
   await c.env.db
