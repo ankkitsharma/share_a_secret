@@ -6,6 +6,9 @@ import { HTTPException } from "hono/http-exception";
 import { eq } from "drizzle-orm";
 import * as z from "zod";
 import { zValidator } from "@hono/zod-validator";
+import { describeRoute } from "hono-openapi";
+import { openAPISpecs } from "hono-openapi";
+import { swaggerUI } from "@hono/swagger-ui";
 
 type Env = {
   DATABASE_URL: string;
@@ -15,18 +18,116 @@ type Env = {
 // Create API v1 routes using chaining
 const apiV1App = new Hono<{ Bindings: Env }>()
   .use("*", cors())
-  .get("/health", async (c) => {
-    return c.json({
-      ok: true,
-      message: "API is healthy",
-    });
-  })
-  .get("/secrets", async (c) => {
-    const secrets = await c.env.db.select().from(secretsTable);
-    return c.json(secrets);
-  })
+  .get(
+    "/health",
+    describeRoute({
+      tags: ["Health"],
+      summary: "Check API health",
+      description: "Returns the health status of the API",
+      responses: {
+        200: {
+          description: "API is healthy",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  ok: { type: "boolean" },
+                  message: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+    async (c) => {
+      return c.json({
+        ok: true,
+        message: "API is healthy",
+      });
+    }
+  )
+  .get(
+    "/secrets",
+    describeRoute({
+      tags: ["Secrets"],
+      summary: "List all secrets",
+      description: "Retrieves a list of all secrets stored in the database",
+      responses: {
+        200: {
+          description: "List of secrets",
+          content: {
+            "application/json": {
+              schema: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    id: { type: "number" },
+                    content: { type: "string" },
+                    created_at: { type: "string", format: "date-time" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+    async (c) => {
+      const secrets = await c.env.db.select().from(secretsTable);
+      return c.json(secrets);
+    }
+  )
   .get(
     "/secrets/:id",
+    describeRoute({
+      tags: ["Secrets"],
+      summary: "Get a secret by ID",
+      description: "Retrieves a specific secret by its ID",
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: {
+            type: "number",
+          },
+          description: "The ID of the secret to retrieve",
+        },
+      ],
+      responses: {
+        200: {
+          description: "Secret found",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  id: { type: "number" },
+                  content: { type: "string" },
+                  created_at: { type: "string", format: "date-time" },
+                },
+              },
+            },
+          },
+        },
+        404: {
+          description: "Secret not found",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  error: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
     zValidator(
       "param",
       z.object({
@@ -35,7 +136,6 @@ const apiV1App = new Hono<{ Bindings: Env }>()
     ),
     async (c) => {
       const id = c.req.valid("param").id;
-      // No need to check for NaN as validation ensures it's a valid number
       const secret = await c.env.db
         .select()
         .from(secretsTable)
@@ -49,7 +149,7 @@ const apiV1App = new Hono<{ Bindings: Env }>()
   );
 
 // Create main app with all routes using chaining
-const app = new Hono<{ Bindings: Env }>()
+let app = new Hono<{ Bindings: Env }>()
   .onError((err, c) => {
     if (err instanceof HTTPException) {
       // Log the HTTPException error
@@ -76,17 +176,83 @@ const app = new Hono<{ Bindings: Env }>()
     await next();
   })
   .route("/apiv1", apiV1App)
-  .get("/sum", (c) => {
-    const sum = 1 + 1;
-    return c.json({ sum });
-  })
-  .get("/", async (c) => {
-    await testConnection(c.env);
-    return c.json({
-      ok: true,
-      message: "Hello Hono!",
-    });
-  });
+  .get(
+    "/sum",
+    describeRoute({
+      tags: ["Math"],
+      summary: "Calculate sum",
+      description: "Returns the sum of 1 + 1",
+      responses: {
+        200: {
+          description: "Sum calculated",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  sum: { type: "number" },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+    (c) => {
+      const sum = 1 + 1;
+      return c.json({ sum });
+    }
+  )
+  .get(
+    "/",
+    describeRoute({
+      tags: ["Health"],
+      summary: "Root endpoint",
+      description: "Returns a greeting message and tests database connection",
+      responses: {
+        200: {
+          description: "Greeting message",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  ok: { type: "boolean" },
+                  message: { type: "string" },
+                },
+              },
+            },
+          },
+        },
+      },
+    }),
+    async (c) => {
+      await testConnection(c.env);
+      return c.json({
+        ok: true,
+        message: "Hello Hono!",
+      });
+    }
+  );
+
+// Add OpenAPI specification endpoint and Swagger UI
+app = app
+  .get(
+    "/openapi",
+    openAPISpecs(app, {
+      documentation: {
+        info: {
+          title: "Share a Secret API",
+          version: "1.0.0",
+          description: "API for sharing and retrieving secrets",
+        },
+        servers: [
+          { url: "http://localhost:8787", description: "Local Server" },
+        ],
+      },
+    })
+  )
+  .get("/swagger", swaggerUI({ url: "/openapi" }));
 
 async function testConnection(c: Env) {
   await c.db
