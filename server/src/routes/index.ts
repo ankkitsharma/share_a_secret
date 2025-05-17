@@ -7,6 +7,8 @@ import { getDb } from "../db";
 import { getSum, getRoot } from "../handlers";
 import { apiV1App } from "./api";
 
+console.log("hello")
+
 export const createApp = () => {
   let app = new Hono<{ Bindings: Env }>()
     .onError((err, c) => {
