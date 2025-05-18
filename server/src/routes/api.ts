@@ -16,7 +16,7 @@ const secrets = new Hono<{ Bindings: Env }>().get(
   "/:id",
   describeRoute({
     tags: ["Secrets"],
-    summary: "Get a secret by ID",
+    summary: "Get a secret by id",
     description: "Retrieves a specific secret by its ID",
     parameters: [
       {
