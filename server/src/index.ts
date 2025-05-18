@@ -1,6 +1,6 @@
-import { createApp } from "./routes";
+import { createApp } from "@/routes"
 
-const app = createApp();
+const app = createApp()
 
-export type ApiV1Type = typeof app;
-export default app;
+export type ApiV1Type = typeof app
+export default app

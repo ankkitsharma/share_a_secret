@@ -1,5 +1,4 @@
-
-import { integer, pgTable, varchar, timestamp } from "drizzle-orm/pg-core";
+import { integer, pgTable, varchar, timestamp } from "drizzle-orm/pg-core"
 
 export const secretsTable = pgTable("secrets", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -10,4 +9,3 @@ export const secretsTable = pgTable("secrets", {
   created_at: timestamp({ precision: 3 }).defaultNow(),
   updated_at: timestamp({ precision: 3 }).defaultNow(),
 })
-

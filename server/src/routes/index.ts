@@ -1,11 +1,11 @@
-import { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
-import { describeRoute, openAPISpecs } from "hono-openapi";
-import { swaggerUI } from "@hono/swagger-ui";
-import { Env } from "../types";
-import { getDb } from "../db";
-import { getSum, getRoot } from "../handlers";
-import { apiV1App } from "./api";
+import { Hono } from "hono"
+import { HTTPException } from "hono/http-exception"
+import { describeRoute, openAPISpecs } from "hono-openapi"
+import { swaggerUI } from "@hono/swagger-ui"
+import { Env } from "@/types"
+import { getDb } from "@/db"
+import { getSum, getRoot } from "@/handlers"
+import { apiV1App } from "./api"
 
 console.log("hello")
 
@@ -13,23 +13,23 @@ export const createApp = () => {
   let app = new Hono<{ Bindings: Env }>()
     .onError((err, c) => {
       if (err instanceof HTTPException) {
-        console.log("HTTPException", err);
-        return c.json({ error: err.message }, err.status);
+        console.log("HTTPException", err)
+        return c.json({ error: err.message }, err.status)
       }
 
       if (err instanceof Error) {
-        console.log("Error", err);
-        return c.text(`Error: ${err.message}`, 500);
+        console.log("Error", err)
+        return c.text(`Error: ${err.message}`, 500)
       }
-      console.error(`${err}`);
-      return c.text("An unknown error occurred", 500);
+      console.error(`${err}`)
+      return c.text("An unknown error occurred", 500)
     })
     .use("*", async (c, next) => {
       if (!c.env.db) {
-        c.env.db = getDb(c.env.DATABASE_URL);
-        console.log("Database connection initialized");
+        c.env.db = getDb(c.env.DATABASE_URL)
+        console.log("Database connection initialized")
       }
-      await next();
+      await next()
     })
     .route("/apiv1", apiV1App)
     .get(
@@ -80,7 +80,7 @@ export const createApp = () => {
         },
       }),
       getRoot
-    );
+    )
 
   // Add OpenAPI specification endpoint and Swagger UI
   app = app
@@ -94,12 +94,15 @@ export const createApp = () => {
             description: "API for sharing and retrieving secrets",
           },
           servers: [
-            { url: "http://localhost:8787", description: "Local Server" },
+            {
+              url: "http://localhost:8787",
+              description: "Local Server",
+            },
           ],
         },
       })
     )
-    .get("/swagger", swaggerUI({ url: "/openapi" }));
+    .get("/swagger", swaggerUI({ url: "/openapi" }))
 
-  return app;
-};
+  return app
+}

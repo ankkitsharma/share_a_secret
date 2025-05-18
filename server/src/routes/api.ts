@@ -1,22 +1,22 @@
-import { Hono } from "hono";
-import { cors } from "hono/cors";
-import { zValidator } from "@hono/zod-validator";
-import { describeRoute } from "hono-openapi";
-import * as z from "zod";
-import { Env } from "../types";
-import { getHealth, getSecrets, getSecretById } from "../handlers/api";
+import { Hono } from "hono"
+import { cors } from "hono/cors"
+import { zValidator } from "@hono/zod-validator"
+import { describeRoute } from "hono-openapi"
+import * as z from "zod"
+import { Env } from "@/types"
+import { getHealth, getSecrets, getSecretById } from "@/handlers/api"
 
 // Validation schemas
 const secretIdSchema = z.object({
   id: z.string(),
-});
+})
 
 // Create a typed route group
 const secrets = new Hono<{ Bindings: Env }>().get(
   "/:id",
   describeRoute({
     tags: ["Secrets"],
-    summary: "Get a secret by id",
+    summary: "Get a secret by ID",
     description: "Retrieves a specific secret by its ID",
     parameters: [
       {
@@ -39,7 +39,10 @@ const secrets = new Hono<{ Bindings: Env }>().get(
               properties: {
                 id: { type: "number" },
                 content: { type: "string" },
-                created_at: { type: "string", format: "date-time" },
+                created_at: {
+                  type: "string",
+                  format: "date-time",
+                },
               },
             },
           },
@@ -62,7 +65,7 @@ const secrets = new Hono<{ Bindings: Env }>().get(
   }),
   zValidator("param", secretIdSchema),
   getSecretById
-);
+)
 
 export const apiV1App = new Hono<{ Bindings: Env }>()
   .use("*", cors())
@@ -109,7 +112,10 @@ export const apiV1App = new Hono<{ Bindings: Env }>()
                   properties: {
                     id: { type: "number" },
                     content: { type: "string" },
-                    created_at: { type: "string", format: "date-time" },
+                    created_at: {
+                      type: "string",
+                      format: "date-time",
+                    },
                   },
                 },
               },
@@ -120,4 +126,4 @@ export const apiV1App = new Hono<{ Bindings: Env }>()
     }),
     getSecrets
   )
-  .route("/secrets", secrets);
+  .route("/secrets", secrets)
