@@ -117,6 +117,71 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground min-h-screen;
+    background: linear-gradient(
+      135deg,
+      oklch(0.98 0.02 240) 0%,
+      oklch(0.95 0.02 260) 25%,
+      oklch(0.92 0.02 280) 50%,
+      oklch(0.95 0.02 260) 75%,
+      oklch(0.98 0.02 240) 100%
+    );
+    background-attachment: fixed;
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+
+  .dark body {
+    background: linear-gradient(
+      135deg,
+      oklch(0.15 0.02 240) 0%,
+      oklch(0.12 0.02 260) 25%,
+      oklch(0.10 0.02 280) 50%,
+      oklch(0.12 0.02 260) 75%,
+      oklch(0.15 0.02 240) 100%
+    );
+  }
+
+  /* Add a subtle animation to cards and interactive elements */
+  .card-hover {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .card-hover:hover {
+    @apply transform -translate-y-1 shadow-lg;
+  }
+
+  /* Add a subtle pulse animation to important elements */
+  @keyframes subtle-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+
+  .animate-subtle-pulse {
+    animation: subtle-pulse 3s ease-in-out infinite;
+  }
+}
+
+/* Add a glass-morphism effect to cards */
+.glass-card {
+  @apply bg-white/80 dark:bg-black/80 backdrop-blur-lg border border-white/20 dark:border-white/10 shadow-xl;
+}
+
+/* Add a subtle shine effect to buttons */
+.button-shine {
+  @apply relative overflow-hidden;
+}
+
+.button-shine::after {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent;
+  transform: translateX(-100%);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  100% {
+    transform: translateX(100%);
   }
 }

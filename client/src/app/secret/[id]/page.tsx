@@ -108,83 +108,98 @@ export default function ViewSecret() {
 
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Error</CardTitle>
-          <CardDescription>{error}</CardDescription>
-        </CardHeader>
-      </Card>
+      <main className="container mx-auto px-4 py-12 max-w-2xl min-h-[calc(100vh-4rem)] flex flex-col justify-center">
+        <Card className="glass-card card-hover">
+          <CardHeader>
+            <CardTitle className="text-destructive">Error</CardTitle>
+            <CardDescription>{error}</CardDescription>
+          </CardHeader>
+        </Card>
+      </main>
     );
   }
 
   if (requiresPasscode && !isVerified) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Passcode Required</CardTitle>
-          <CardDescription>
-            This secret is protected by a passcode.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={verifyPasscode} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="passcode">Enter Passcode</Label>
-              <Input
-                id="passcode"
-                type="password"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
-                placeholder="Enter the passcode..."
-                required
-                disabled={isVerified}
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading || isVerified}
-            >
-              {isLoading
-                ? "Verifying..."
-                : isVerified
-                ? "Verified"
-                : "View Secret"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <main className="container mx-auto px-4 py-12 max-w-2xl min-h-[calc(100vh-4rem)] flex flex-col justify-center">
+        <Card className="glass-card card-hover">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
+              Passcode Required
+            </CardTitle>
+            <CardDescription className="text-lg">
+              This secret is protected by a passcode.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={verifyPasscode} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="passcode" className="text-lg">
+                  Enter Passcode
+                </Label>
+                <Input
+                  id="passcode"
+                  type="password"
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  placeholder="Enter the passcode..."
+                  required
+                  disabled={isVerified}
+                  className="glass-card"
+                />
+              </div>
+              <Button
+                type="submit"
+                className="w-full button-shine"
+                disabled={isLoading || isVerified}
+              >
+                {isLoading
+                  ? "Verifying..."
+                  : isVerified
+                  ? "Verified"
+                  : "View Secret"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </main>
     );
   }
 
   if (!secret) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Loading...</CardTitle>
-          <CardDescription>Fetching your secret...</CardDescription>
-        </CardHeader>
-      </Card>
+      <main className="container mx-auto px-4 py-12 max-w-2xl min-h-[calc(100vh-4rem)] flex flex-col justify-center">
+        <Card className="glass-card card-hover animate-subtle-pulse">
+          <CardHeader>
+            <CardTitle>Loading...</CardTitle>
+            <CardDescription>Fetching your secret...</CardDescription>
+          </CardHeader>
+        </Card>
+      </main>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Your Secret</CardTitle>
-        <CardDescription>
-          {isVerified
-            ? "This secret has been viewed and deleted."
-            : "Here's your secret message:"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {secret && (
-          <div className="p-4 bg-muted rounded-lg font-mono break-all">
-            {secret}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <main className="container mx-auto px-4 py-12 max-w-2xl min-h-[calc(100vh-4rem)] flex flex-col justify-center">
+      <Card className="glass-card card-hover">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
+            Your Secret
+          </CardTitle>
+          <CardDescription className="text-lg">
+            {isVerified
+              ? "This secret has been viewed and deleted."
+              : "Here's your secret message:"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {secret && (
+            <div className="p-6 bg-black/5 dark:bg-white/5 rounded-lg font-mono break-all text-lg border border-white/10">
+              {secret}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </main>
   );
 }
