@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { describeRoute, openAPISpecs } from "hono-openapi";
+import { openAPISpecs } from "hono-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
 import { Env } from "@/types";
 import { getDb } from "@/db";
@@ -7,17 +7,26 @@ import { getSum, getRoot } from "@/handlers";
 import { apiV1App } from "./api";
 import { rootDesc, sumDesc } from "@/types/swagger";
 import { handleError } from "@/utils";
+import { cors } from "hono/cors";
 
 export const createApp = () => {
   let app = new Hono<{ Bindings: Env }>()
     .onError(handleError)
-    .use("*", async (c, next) => {
-      if (!c.env.db) {
-        c.env.db = getDb(c.env.DATABASE_URL);
-        console.log("Database connection initialized");
-      }
-      await next();
-    })
+    .use(
+      "*",
+      async (c, next) => {
+        if (!c.env.db) {
+          c.env.db = getDb(c.env.DATABASE_URL);
+          console.log("Database connection initialized");
+        }
+        await next();
+      },
+      cors({
+        origin: "*",
+        allowHeaders: ["Content-Type", "Authorization"],
+        allowMethods: ["GET", "POST", "PUT", "DELETE"],
+      })
+    )
     .route("/apiv1", apiV1App)
     .get("/sum", sumDesc, getSum)
     .get("/", rootDesc, getRoot);
