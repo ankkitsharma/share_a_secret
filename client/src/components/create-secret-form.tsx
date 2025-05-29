@@ -23,7 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-const API_URL = "http://localhost:8787/apiv1";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export function CreateSecretForm() {
   const [isLoading, setIsLoading] = useState(false);
